@@ -154,7 +154,7 @@
         let timeLimit = 10.0;
         let totalScore = 0;
         let additionalScore = 0;
-        let isQuestionActive = false;
+        let isQuestionActive = true;
 
         const questionsData = [
             { question: "你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
@@ -204,7 +204,7 @@
                     totalScore += 5;
                     showNextQuestion(answeredQuestions + 1);
                 }
-            }, 50); // 每 50ms 更新一次，达到 0.05 秒跳动
+            }, 50);
         }
 
         function processAnswer(index) {
@@ -214,17 +214,14 @@
                 totalScore += parseInt(select.value) + additionalScore;
                 additionalScore = 0;
                 clearInterval(countdown);
+                isQuestionActive = false;
                 showNextQuestion(index + 1);
             }
         }
 
         function showNextQuestion(currentIndex) {
             clearInterval(countdown);
-            if (isQuestionActive) return;
-            isQuestionActive = true;
-
-            const select = document.getElementById(`q${currentIndex}`);
-            if (select && !document.getElementById(`q${currentIndex + 1}-section`)) {
+            if (!isQuestionActive && currentIndex <= totalQuestions) {
                 answeredQuestions++;
                 const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
                 document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
@@ -261,6 +258,7 @@
                     questionDiv.appendChild(select);
                     additionalQuestions.appendChild(questionDiv);
 
+                    isQuestionActive = true;
                     startCountdown();
                 } else {
                     document.getElementById("calculate-button").style.display = "block";
