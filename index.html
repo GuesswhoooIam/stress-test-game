@@ -156,6 +156,7 @@
         let totalScore = 0;
         let additionalScore = 0;
         let isQuestionActive = true;
+        const answeredQuestionsMap = {}; // 用于记录回答过的问题
 
         const questionsData = [
             { question: "你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
@@ -207,13 +208,14 @@
         }
 
         function processAnswer(index) {
-            if (!isQuestionActive) return;
+            if (!isQuestionActive || answeredQuestionsMap[index]) return; // 检查问题是否已经回答
             const select = document.getElementById(`q${index}`);
             if (select && select.value !== "") {
                 totalScore += parseInt(select.value) + additionalScore;
                 additionalScore = 0;
                 clearInterval(countdown);
                 isQuestionActive = false;
+                answeredQuestionsMap[index] = true; // 标记问题已回答
                 showNextQuestion(index);
             }
         }
@@ -268,18 +270,19 @@
 
         function calculateScore() {
             let resultText = `你的总分：${totalScore} 分<br>`;
-            resultText += "<br>计分规则|RULE：<br>";
+            resultText += "<br>计分规则：<br>";
             resultText += "- 每道题的选择会产生对应的基础分数。<br>";
             resultText += "- Each question selection will generate a corresponding base score.<br>";
             resultText += "- 每道题目的答题时间也会影响你的压力指数。<br>";
             resultText += "- the time taken to answer each question will also impact your stress index.<br>";
+            
 
             let imagePath;
             if (totalScore <= 8) {
-                resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much lol.";
+                resultText += "<br><strong>结果：</strong>低压力：你也别太放松了= =|||~ | Low Stress: Keep your balance! But be careful not to relax too much lol.";
                 imagePath = "image1.jpg";
             } else if (totalScore <= 22) {
-                resultText += "<br><strong>结果：</strong>中等压力：感觉还行，问题不大。<span class='highlight'>压力中等，你还 hold 得住！</span> | Moderate Stress:  You are doing just fine. No worries! <span class='highlight'>Be cautious of moderate stress!</span>";
+                resultText += "<br><strong>结果：</strong>中等压力：还行还行，问题不大。<span class='highlight'>压力中等，还 hold 得住！</span> | Moderate Stress: No worries, you are doing just fine. <span class='highlight'>Be cautious of moderate stress!</span>";
                 imagePath = "image2.jpg";
             } else if (totalScore <= 36) {
                 resultText += "<br><strong>结果：</strong>高压力：你的压力较大，试试冥想或做些开心的事！<span class='highlight'>需要减压！</span> | High Stress: Try meditation or do some sports to relax. <span class='highlight'>You need to destress!</span>";
