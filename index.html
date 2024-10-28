@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 60px; /* 留出进度条空间 */
+            padding-top: 90px; /* 留出进度条和倒计时空间 */
         }
         h1 {
             font-size: 2em;
@@ -98,6 +98,20 @@
             font-size: 0.9em;
             line-height: 20px;
         }
+        /* Timer styling */
+        #timer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2em;
+            color: green;
+            z-index: 1000;
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -107,17 +121,17 @@
         <div class="progress-bar" id="progress-bar">0%</div>
     </div>
 
+    <!-- Timer display -->
+    <div id="timer">剩余时间：10秒 | Time remaining: 10s</div>
+
     <h1>压力自测游戏 | Stress Self-Assessment Game</h1>
     <p>回答以下问题，测测你的压力水平！| Answer the questions to assess your stress level!</p>
-
-    <!-- Timer display -->
-    <div id="timer" style="font-size: 1.2em; margin-bottom: 10px; color: green;"></div>
 
     <!-- Questions Section -->
     <div id="questions">
         <div class="question" id="q1-section">
             <label>1. 你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?</label>
-            <select id="q1" onchange="showNextQuestion(1)">
+            <select id="q1" onchange="processAnswer(1)">
                 <option value="">请选择 | Please select</option>
                 <option value="0">从不 | Never</option>
                 <option value="1">偶尔 | Sometimes</option>
@@ -136,8 +150,12 @@
     <script>
         const totalQuestions = 15;
         let answeredQuestions = 0;
+        let countdown; // 倒计时变量
+        let timeLimit = 10; // 每道题的总时间限制，单位：显示秒数
+        let totalScore = 0; // 总分数
+        let additionalScore = 0; // 记录额外得分
 
-        // Data for questions and answers
+        // 初始化题目数据
         const questionsData = [
             { question: "你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否常常担心考试成绩？ | Do you often worry about exam results?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
@@ -155,12 +173,6 @@
             { question: "你是否会因为未来而感到焦虑？ | Do you feel anxious about the future?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] }
         ];
-
-        let countdown; // 倒计时变量
-        let timeLimit = 10; // 每道题的总时间限制，单位：显示秒数
-        let totalScore = 0; // 总分数
-        let startTime; // 记录开始时间
-        let additionalScore = 0; // 记录额外得分
 
         function startCountdown() {
             let timeLeft = timeLimit;
@@ -199,6 +211,16 @@
             }, 500); // 每 0.5 秒更新一次倒计时
         }
 
+        function processAnswer(index) {
+            const select = document.getElementById(`q${index}`);
+            if (select && select.value !== "") {
+                totalScore += parseInt(select.value) + additionalScore; // 加上选择的分数和额外得分
+                additionalScore = 0; // 重置额外得分
+                clearInterval(countdown); // 停止倒计时
+                showNextQuestion(index + 1); // 显示下一题
+            }
+        }
+
         function removeCurrentQuestion(index) {
             const currentQuestionElement = document.getElementById(`q${index}-section`);
             if (currentQuestionElement) {
@@ -207,59 +229,47 @@
         }
 
         function showNextQuestion(currentIndex) {
-    clearInterval(countdown); // 清除上一个倒计时
-    const select = document.getElementById(`q${currentIndex}`);
-    
-    // 如果用户选择了一个答案并且没有重复显示问题
-    if (select && select.value !== "" && !document.getElementById(`q${currentIndex + 1}-section`)) {
-        answeredQuestions++;
-        
-        // 加上思考时间得分
-        totalScore += additionalScore;
+            const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
+            document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
+            document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
 
-        // 更新进度条，确保最大值为 100%
-        const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
-        document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
-        document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
+            if (currentIndex < totalQuestions) {
+                const nextQuestion = questionsData[currentIndex];
+                const additionalQuestions = document.getElementById("additional-questions");
 
-        // 显示下一个问题
-        if (currentIndex < totalQuestions) {
-            const nextQuestion = questionsData[currentIndex];
-            const additionalQuestions = document.getElementById("additional-questions");
+                const questionDiv = document.createElement("div");
+                questionDiv.classList.add("question");
+                questionDiv.id = `q${currentIndex + 1}-section`;
 
-            const questionDiv = document.createElement("div");
-            questionDiv.classList.add("question");
-            questionDiv.id = `q${currentIndex + 1}-section`;
+                const label = document.createElement("label");
+                label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
+                questionDiv.appendChild(label);
 
-            const label = document.createElement("label");
-            label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
-            questionDiv.appendChild(label);
+                const select = document.createElement("select");
+                select.id = `q${currentIndex + 1}`;
+                select.onchange = () => processAnswer(currentIndex + 1);
 
-            const select = document.createElement("select");
-            select.id = `q${currentIndex + 1}`;
-            select.onchange = () => showNextQuestion(currentIndex + 1);
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.textContent = "请选择 | Please select";
+                select.appendChild(defaultOption);
 
-            const defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.textContent = "请选择 | Please select";
-            select.appendChild(defaultOption);
+                nextQuestion.options.forEach((optionText, index) => {
+                    const option = document.createElement("option");
+                    option.value = index;
+                    option.textContent = optionText;
+                    select.appendChild(option);
+                });
 
-            nextQuestion.options.forEach((optionText, index) => {
-                const option = document.createElement("option");
-                option.value = index;
-                option.textContent = optionText;
-                select.appendChild(option);
-            });
+                questionDiv.appendChild(select);
+                additionalQuestions.appendChild(questionDiv);
 
-            questionDiv.appendChild(select);
-            additionalQuestions.appendChild(questionDiv);
-
-            startCountdown(); // 显示新问题时开始倒计时
-        } else {
-            document.getElementById("calculate-button").style.display = "block";
+                startCountdown(); // 显示新问题时开始倒计时
+            } else {
+                document.getElementById("calculate-button").style.display = "block";
+            }
         }
-    }
-}
+
         function calculateScore() {
             let resultText = `你的总分：${totalScore} 分<br>`;
 
@@ -271,9 +281,8 @@
             resultText += "- 如果回答时间超过 8 秒，额外得分 +3。<br>";
             resultText += "- 如果在倒计时结束前未回答，系统自动得分 +5。<br>";
 
-            let imagePath; // 图片路径
+            let imagePath;
 
-            // 根据分数等级给出个性化反馈和图片
             if (totalScore <= 15) {
                 resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much.";
                 imagePath = "image1.jpg";
@@ -288,7 +297,6 @@
                 imagePath = "image4.jpg";
             }
 
-            // 将结果和图片显示在页面的 result 区域
             document.getElementById("result").innerHTML = `${resultText}<br><img src="${imagePath}" alt="结果图片 | Result Image" style="max-width: 100%; margin-top: 10px; border-radius: 8px;">`;
         }
     </script>
