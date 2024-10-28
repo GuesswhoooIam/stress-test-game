@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 60px; /* 留出进度条空间 */
+            padding-top: 60px;
         }
         h1 {
             font-size: 2em;
@@ -122,11 +122,13 @@
     </div>
 
     <!-- Timer display -->
-    <div id="timer">10.00</div>
+    <div id="timer">10</div>
 
     <h1>压力自测游戏 | Stress Self-Assessment Game</h1>
     <p>回答以下问题，测测你的压力水平！| Answer the questions to assess your stress level!</p>
-
+    <p>不论指数怎么样只是一个参考，何况压力不是坏事，正视压力才能更好的处理压力。</p>
+    <p>No matter the index, it’s just a reference. After all, stress isn’t a bad thing; facing it directly is the key to managing it effectively. You gonna be fine!</p>
+    
     <!-- Questions Section -->
     <div id="questions">
         <div class="question" id="q1-section">
@@ -151,7 +153,6 @@
         const totalQuestions = 15;
         let answeredQuestions = 0;
         let countdown;
-        let timeLimit = 10.0;
         let totalScore = 0;
         let additionalScore = 0;
         let isQuestionActive = true;
@@ -175,13 +176,13 @@
         ];
 
         function startCountdown(currentIndex) {
-            let timeLeft = timeLimit;
+            let timeLeft = 10; // 显示倒计时为 10 秒
             additionalScore = 0;
-            document.getElementById("timer").innerText = timeLeft.toFixed(2);
+            document.getElementById("timer").innerText = timeLeft;
 
             countdown = setInterval(() => {
-                timeLeft -= 0.05;
-                document.getElementById("timer").innerText = timeLeft.toFixed(2);
+                timeLeft -= 1;
+                document.getElementById("timer").innerText = timeLeft;
 
                 if (timeLeft <= 2) {
                     document.getElementById("timer").style.color = "red";
@@ -207,7 +208,7 @@
                         showNextQuestion(currentIndex + 1);
                     }
                 }
-            }, 50);
+            }, 500); // 0.5 秒更新一次，模拟 10 秒倒计时
         }
 
         function processAnswer(index) {
@@ -224,7 +225,7 @@
 
         function showNextQuestion(currentIndex) {
             clearInterval(countdown);
-            isQuestionActive = true; // Set active question flag for next question
+            isQuestionActive = true;
 
             if (currentIndex <= totalQuestions) {
                 answeredQuestions++;
@@ -274,23 +275,22 @@
             let resultText = `你的总分：${totalScore} 分<br>`;
             resultText += "<br>计分规则：<br>";
             resultText += "- 每道题的选择会产生对应的基础分数。<br>";
-            resultText += "- 如果回答时间超过 3 秒，额外得分 +1。<br>";
-            resultText += "- 如果回答时间超过 5 秒，额外得分 +2。<br>";
-            resultText += "- 如果回答时间超过 8 秒，额外得分 +3。<br>";
-            resultText += "- 如果在倒计时结束前未回答，系统自动得分 +5。<br>";
+            resultText += "- Each question selection will generate a corresponding base score.<br>";
+            resultText += "- 每道题目的答题时间也会影响你的压力指数。<br>";
+            resultText += "- the time taken to answer each question will also impact your stress index.<br>";
 
             let imagePath;
-            if (totalScore <= 15) {
+            if (totalScore <= 8) {
                 resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much.";
                 imagePath = "image1.jpg";
-            } else if (totalScore <= 30) {
+            } else if (totalScore <= 22) {
                 resultText += "<br><strong>结果：</strong>中等压力：建议你多休息，多做自己喜欢的事。<span class='highlight'>压力中等，还需警惕！</span> | Moderate Stress: Take more breaks and do what you enjoy. <span class='highlight'>Be cautious of moderate stress!</span>";
                 imagePath = "image2.jpg";
-            } else if (totalScore <= 50) {
-                resultText += "<br><strong>结果：</strong>高压力：你的压力较大，试试冥想或找朋友聊聊吧！<span class='highlight'>需要减压！</span> | High Stress: Try meditation or talk to friends. <span class='highlight'>You need to destress!</span>";
+            } else if (totalScore <= 36) {
+                resultText += "<br><strong>结果：</strong>高压力：你的压力较大，试试冥想或做些开心的事！<span class='highlight'>需要减压！</span> | High Stress: Try meditation or do some sports to relax. <span class='highlight'>You need to destress!</span>";
                 imagePath = "image3.jpg";
             } else {
-                resultText += "<br><strong>结果：</strong>超高压力：情况不妙啊！赶紧放下书本，出去走走，找人吐槽一下吧！<span class='highlight'>严重预警！</span> | Extremely High Stress: Not good! Take a break, go outside, and talk to someone. <span class='highlight'>Serious Warning!</span>";
+                resultText += "<br><strong>结果：</strong>超高压力：情况不妙啊！赶紧出去走走，找人吐槽一下吧！<span class='highlight'>严重预警！</span> | Extremely High Stress: Not good! Take a break, go outside, and talk to someone. <span class='highlight'>Serious Warning!</span>";
                 imagePath = "image4.jpg";
             }
 
