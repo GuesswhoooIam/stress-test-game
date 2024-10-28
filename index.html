@@ -122,7 +122,7 @@
     </div>
 
     <!-- Timer display -->
-    <div id="timer">10</div>
+    <div id="timer">10.00</div>
 
     <h1>压力自测游戏 | Stress Self-Assessment Game</h1>
     <p>回答以下问题，测测你的压力水平！| Answer the questions to assess your stress level!</p>
@@ -175,14 +175,14 @@
             { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] }
         ];
 
-        function startCountdown(currentIndex) {
-            let timeLeft = 10; // 显示倒计时为 10 秒
+        function startCountdown() {
+            let timeLeft = 10.00; // 显示倒计时为 10 秒，2位小数
             additionalScore = 0;
-            document.getElementById("timer").innerText = timeLeft;
+            document.getElementById("timer").innerText = timeLeft.toFixed(2);
 
             countdown = setInterval(() => {
-                timeLeft -= 1;
-                document.getElementById("timer").innerText = timeLeft;
+                timeLeft -= 0.05; // 每次减少 0.05，约等于2位小数
+                document.getElementById("timer").innerText = timeLeft.toFixed(2);
 
                 if (timeLeft <= 2) {
                     document.getElementById("timer").style.color = "red";
@@ -202,13 +202,8 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    if (isQuestionActive) {  // 检查问题是否已经回答
-                        totalScore += 5;
-                        isQuestionActive = false;
-                        showNextQuestion(currentIndex + 1);
-                    }
                 }
-            }, 500); // 0.5 秒更新一次，模拟 10 秒倒计时
+            }, 50); // 50 毫秒更新一次
         }
 
         function processAnswer(index) {
@@ -264,7 +259,7 @@
                     questionDiv.appendChild(select);
                     additionalQuestions.appendChild(questionDiv);
 
-                    startCountdown(currentIndex); // Start countdown with current question index
+                    startCountdown(); // 仅用于计分的倒计时
                 } else {
                     document.getElementById("calculate-button").style.display = "block";
                 }
@@ -273,7 +268,7 @@
 
         function calculateScore() {
             let resultText = `你的总分：${totalScore} 分<br>`;
-            resultText += "<br>计分规则：<br>";
+            resultText += "<br>计分规则|RULE：<br>";
             resultText += "- 每道题的选择会产生对应的基础分数。<br>";
             resultText += "- Each question selection will generate a corresponding base score.<br>";
             resultText += "- 每道题目的答题时间也会影响你的压力指数。<br>";
@@ -281,10 +276,10 @@
 
             let imagePath;
             if (totalScore <= 8) {
-                resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much.";
+                resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much lol.";
                 imagePath = "image1.jpg";
             } else if (totalScore <= 22) {
-                resultText += "<br><strong>结果：</strong>中等压力：建议你多休息，多做自己喜欢的事。<span class='highlight'>压力中等，还需警惕！</span> | Moderate Stress: Take more breaks and do what you enjoy. <span class='highlight'>Be cautious of moderate stress!</span>";
+                resultText += "<br><strong>结果：</strong>中等压力：感觉还行，问题不大。<span class='highlight'>压力中等，你还 hold 得住！</span> | Moderate Stress:  You are doing just fine. No worries! <span class='highlight'>Be cautious of moderate stress!</span>";
                 imagePath = "image2.jpg";
             } else if (totalScore <= 36) {
                 resultText += "<br><strong>结果：</strong>高压力：你的压力较大，试试冥想或做些开心的事！<span class='highlight'>需要减压！</span> | High Stress: Try meditation or do some sports to relax. <span class='highlight'>You need to destress!</span>";
