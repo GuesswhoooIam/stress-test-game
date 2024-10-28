@@ -154,53 +154,60 @@
         ];
 
          function showNextQuestion(currentIndex) {
-            const select = document.getElementById(`q${currentIndex}`);
-            
-            // 只在选中值时显示下一个问题
-            if (select.value !== "" && !document.getElementById(`q${currentIndex + 1}-section`)) {
-                answeredQuestions++;
-
-                // 更新进度条
-                const progressPercentage = (answeredQuestions / totalQuestions) * 100;
-                document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
-                document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
-
-                // 显示下一个问题
-                if (currentIndex < totalQuestions) {
-                    const nextQuestion = questionsData[currentIndex];
-                    const additionalQuestions = document.getElementById("additional-questions");
-
-                    const questionDiv = document.createElement("div");
-                    questionDiv.classList.add("question");
-                    questionDiv.id = `q${currentIndex + 1}-section`;
-
-                    const label = document.createElement("label");
-                    label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
-                    questionDiv.appendChild(label);
-
-                    const select = document.createElement("select");
-                    select.id = `q${currentIndex + 1}`;
-                    select.onchange = () => showNextQuestion(currentIndex + 1);
-
-                    const defaultOption = document.createElement("option");
-                    defaultOption.value = "";
-                    defaultOption.textContent = "请选择 | Please select";
-                    select.appendChild(defaultOption);
-
-                    nextQuestion.options.forEach((optionText, index) => {
-                        const option = document.createElement("option");
-                        option.value = index;
-                        option.textContent = optionText;
-                        select.appendChild(option);
-                    });
-
-                    questionDiv.appendChild(select);
-                    additionalQuestions.appendChild(questionDiv);
-                } else {
-                    document.getElementById("calculate-button").style.display = "block";
-                }
-            }
+    const select = document.getElementById(`q${currentIndex}`);
+    
+    // 只有在选中值且下一个问题不存在时才显示新问题
+    if (select.value !== "") {
+        // 移除已存在的下一个问题（如果存在）
+        const nextQuestionElement = document.getElementById(`q${currentIndex + 1}-section`);
+        if (nextQuestionElement) {
+            nextQuestionElement.remove();
         }
+
+        // 计算回答的问题数
+        answeredQuestions = currentIndex;
+
+        // 更新进度条
+        const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+        document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
+        document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
+
+        // 显示下一个问题
+        if (currentIndex < totalQuestions) {
+            const nextQuestion = questionsData[currentIndex];
+            const additionalQuestions = document.getElementById("additional-questions");
+
+            const questionDiv = document.createElement("div");
+            questionDiv.classList.add("question");
+            questionDiv.id = `q${currentIndex + 1}-section`;
+
+            const label = document.createElement("label");
+            label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
+            questionDiv.appendChild(label);
+
+            const select = document.createElement("select");
+            select.id = `q${currentIndex + 1}`;
+            select.onchange = () => showNextQuestion(currentIndex + 1);
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "请选择 | Please select";
+            select.appendChild(defaultOption);
+
+            nextQuestion.options.forEach((optionText, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.textContent = optionText;
+                select.appendChild(option);
+            });
+
+            questionDiv.appendChild(select);
+            additionalQuestions.appendChild(questionDiv);
+        } else {
+            document.getElementById("calculate-button").style.display = "block";
+        }
+    }
+}
 
         function calculateScore() {
             let totalScore = 0;
