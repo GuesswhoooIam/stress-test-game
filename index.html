@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 90px; /* 留出进度条和倒计时空间 */
+            padding-top: 60px; /* 留出进度条空间 */
         }
         h1 {
             font-size: 2em;
@@ -101,7 +101,7 @@
         /* Timer styling */
         #timer {
             position: fixed;
-            top: 20px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 1.2em;
@@ -150,45 +150,44 @@
     <script>
         const totalQuestions = 15;
         let answeredQuestions = 0;
-        let countdown; // 倒计时变量
-        let timeLimit = 10; // 每道题的总时间限制
-        let totalScore = 0; // 总分数
-        let additionalScore = 0; // 记录额外得分
-        let isQuestionActive = true; // 跟踪当前问题是否为活动状态
+        let countdown;
+        let timeLimit = 10.0;
+        let totalScore = 0;
+        let additionalScore = 0;
+        let isQuestionActive = false;
 
-        // 初始化题目数据
         const questionsData = [
             { question: "你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否常常担心考试成绩？ | Do you often worry about exam results?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否觉得学习压力影响了你的睡眠？ | Does academic stress affect your sleep?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否经常觉得学习占用了太多的休息时间？ | Do you often feel that studying takes up too much of your rest time?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你觉得自己的课外兴趣爱好是否常被忽视？ | Do you feel that your hobbies are often ignored?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
             { question: "家人对你的学业是否要求严格？ | Are your family’s academic expectations strict?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因家人的期望感到压力？ | Do you feel pressured by family expectations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因为朋友的问题而感到烦恼？ | Do you often feel troubled by friends’ issues?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
             { question: "你是否容易因为小事而感到烦恼？ | Do small things easily bother you?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否常常觉得无精打采？ | Do you often feel unmotivated?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你在应对突发情况时是否会感到不安？ | Do you feel uneasy in unexpected situations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因为未来而感到焦虑？ | Do you feel anxious about the future?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] }
+            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] }
         ];
 
         function startCountdown() {
             let timeLeft = timeLimit;
-            additionalScore = 0; // 重置额外得分
+            additionalScore = 0;
             document.getElementById("timer").innerText = timeLeft.toFixed(2);
 
             countdown = setInterval(() => {
-                timeLeft -= 0.5;
+                timeLeft -= 0.05;
                 document.getElementById("timer").innerText = timeLeft.toFixed(2);
 
                 if (timeLeft <= 2) {
                     document.getElementById("timer").style.color = "red";
                 } else if (timeLeft <= 5) {
                     document.getElementById("timer").style.color = "yellow";
-                } else if (timeLeft <= 8) {
+                } else {
                     document.getElementById("timer").style.color = "green";
                 }
 
@@ -202,36 +201,30 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    totalScore += 5; // 超时未回答，得分+5
-                    removeCurrentQuestion(answeredQuestions + 1);
-                    isQuestionActive = false; // 允许加载下一题
+                    totalScore += 5;
                     showNextQuestion(answeredQuestions + 1);
                 }
-            }, 500); // 每 0.5 秒更新一次倒计时
+            }, 50); // 每 50ms 更新一次，达到 0.05 秒跳动
         }
 
         function processAnswer(index) {
-            if (isQuestionActive) {
-                const select = document.getElementById(`q${index}`);
-                if (select && select.value !== "") {
-                    totalScore += parseInt(select.value) + additionalScore;
-                    additionalScore = 0;
-                    clearInterval(countdown);
-                    isQuestionActive = false; // 允许加载下一题
-                    showNextQuestion(index + 1);
-                }
-            }
-        }
-
-        function removeCurrentQuestion(index) {
-            const currentQuestionElement = document.getElementById(`q${index}-section`);
-            if (currentQuestionElement) {
-                currentQuestionElement.remove();
+            if (!isQuestionActive) return;
+            const select = document.getElementById(`q${index}`);
+            if (select && select.value !== "") {
+                totalScore += parseInt(select.value) + additionalScore;
+                additionalScore = 0;
+                clearInterval(countdown);
+                showNextQuestion(index + 1);
             }
         }
 
         function showNextQuestion(currentIndex) {
-            if (!isQuestionActive) {
+            clearInterval(countdown);
+            if (isQuestionActive) return;
+            isQuestionActive = true;
+
+            const select = document.getElementById(`q${currentIndex}`);
+            if (select && !document.getElementById(`q${currentIndex + 1}-section`)) {
                 answeredQuestions++;
                 const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
                 document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
@@ -268,7 +261,6 @@
                     questionDiv.appendChild(select);
                     additionalQuestions.appendChild(questionDiv);
 
-                    isQuestionActive = true; // 设置为活动状态
                     startCountdown();
                 } else {
                     document.getElementById("calculate-button").style.display = "block";
