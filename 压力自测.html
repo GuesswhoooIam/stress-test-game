@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>压力自测游戏 | Stress Self-Assessment Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px; /* 留出进度条空间 */
+        }
+        h1 {
+            font-size: 2em;
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 1em;
+        }
+        .question {
+            margin: 10px auto;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: left;
+        }
+        .question label {
+            display: block;
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #dcdcdc;
+            font-size: 1em;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        #result {
+            margin-top: 30px;
+            font-size: 1.1em;
+            color: #333;
+            font-weight: bold;
+            padding: 15px;
+            max-width: 500px;
+            background-color: #e9f4ff;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .highlight {
+            color: red;
+            font-weight: bold;
+        }
+        #result img {
+            margin-top: 15px;
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        /* Progress bar styling */
+        .progress-container {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #e0e0e0;
+            z-index: 1000;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4a90e2;
+            text-align: center;
+            color: white;
+            font-size: 0.9em;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress bar container -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar">0%</div>
+    </div>
+
+    <h1>压力自测游戏 | Stress Self-Assessment Game</h1>
+    <p>回答以下问题，测测你的压力水平！| Answer the questions to assess your stress level!</p>
+
+    <!-- Questions Section -->
+    <div id="questions">
+        <div class="question" id="q1-section">
+            <label>1. 你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?</label>
+            <select id="q1" onchange="showNextQuestion(1)">
+                <option value="">请选择 | Please select</option>
+                <option value="0">从不 | Never</option>
+                <option value="1">偶尔 | Sometimes</option>
+                <option value="2">经常 | Often</option>
+                <option value="3">总是 | Always</option>
+            </select>
+        </div>
+        <div id="additional-questions"></div>
+
+        <button onclick="calculateScore()" id="calculate-button" style="display: none;">获取我的压力水平 | Get My Stress Level</button>
+    </div>
+
+    <!-- Result Section -->
+    <div id="result"></div>
+
+    <script>
+        const totalQuestions = 15;
+        let answeredQuestions = 0;
+
+        // Data for questions and answers
+        const questionsData = [
+            { question: "你在学校会感到经常被课业压垮吗？ | Do you often feel overwhelmed by schoolwork?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否常常担心考试成绩？ | Do you often worry about exam results?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否觉得学习压力影响了你的睡眠？ | Does academic stress affect your sleep?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否经常觉得学习占用了太多的休息时间？ | Do you often feel that studying takes up too much of your rest time?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你觉得自己的课外兴趣爱好是否常被忽视？ | Do you feel that your hobbies are often ignored?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["总是 | Always", "经常 | Often", "偶尔 | Sometimes", "从不 | Never"] },
+            { question: "家人对你的学业是否要求严格？ | Are your family’s academic expectations strict?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因家人的期望感到压力？ | Do you feel pressured by family expectations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因为朋友的问题而感到烦恼？ | Do you often feel troubled by friends’ issues?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["总是 | Always", "经常 | Often", "偶尔 | Sometimes", "从不 | Never"] },
+            { question: "你是否容易因为小事而感到烦恼？ | Do small things easily bother you?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否常常觉得无精打采？ | Do you often feel unmotivated?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在应对突发情况时是否会感到不安？ | Do you feel uneasy in unexpected situations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因为未来而感到焦虑？ | Do you feel anxious about the future?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["总是 | Always", "经常 | Often", "偶尔 | Sometimes", "从不 | Never"] }
+        ];
+
+        function showNextQuestion(currentIndex) {
+            const select = document.getElementById(`q${currentIndex}`);
+            if (select.value !== "") {
+                answeredQuestions++;
+
+                // Update progress bar
+                const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+                document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
+                document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
+
+                // Show the next question
+                if (currentIndex < totalQuestions) {
+                    const nextQuestion = questionsData[currentIndex];
+                    const additionalQuestions = document.getElementById("additional-questions");
+
+                    const questionDiv = document.createElement("div");
+                    questionDiv.classList.add("question");
+                    questionDiv.id = `q${currentIndex + 1}-section`;
+
+                    const label = document.createElement("label");
+                    label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
+                    questionDiv.appendChild(label);
+
+                    const select = document.createElement("select");
+                    select.id = `q${currentIndex + 1}`;
+                    select.onchange = () => showNextQuestion(currentIndex + 1);
+
+                    const defaultOption = document.createElement("option");
+                    defaultOption.value = "";
+                    defaultOption.textContent = "请选择 | Please select";
+                    select.appendChild(defaultOption);
+
+                    nextQuestion.options.forEach((optionText, index) => {
+                        const option = document.createElement("option");
+                        option.value = index;
+                        option.textContent = optionText;
+                        select.appendChild(option);
+                    });
+
+                    questionDiv.appendChild(select);
+                    additionalQuestions.appendChild(questionDiv);
+                } else {
+                    document.getElementById("calculate-button").style.display = "block";
+                }
+            }
+        }
+
+        function calculateScore() {
+            let totalScore = 0;
+            for (let i = 1; i <= totalQuestions; i++) {
+                const score = parseInt(document.getElementById(`q${i}`).value);
+                totalScore += score;
+            }
+
+            let resultText;
+            let imagePath;
+            if (totalScore <= 10) {
+                resultText = "低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much.";
+                imagePath = "image1.jpg";
+            } else if (totalScore <= 20) {
+                resultText = "中等压力：建议你多休息，多做自己喜欢的事。<span class='highlight'>压力中等，还需警惕！</span> | Moderate Stress: Take more breaks and do what you enjoy. <span class='highlight'>Be cautious of moderate stress!</span>";
+                imagePath = "image2.jpg";
+            } else if (totalScore <= 40) {
+                resultText = "高压力：你的压力较大，试试冥想或找朋友聊聊吧！<span class='highlight'>需要减压！</span> | High Stress: Try meditation or talk to friends. <span class='highlight'>You need to destress!</span>";
+                imagePath = "image3.jpg";
+            } else {
+                resultText = "超高压力：情况不妙啊！赶紧放下书本，出去走走，找人吐槽一下吧！<span class='highlight'>严重预警！</span> | Extremely High Stress: Not good! Take a break, go outside, and talk to someone. <span class='highlight'>Serious Warning!</span>";
+                imagePath = "image4.jpg";
+            }
+
+            document.getElementById('result').innerHTML = `你的压力评分：${totalScore} | Your Stress Score: ${totalScore} <br>${resultText}<br><img src="${imagePath}" alt="结果图片 | Result Image">`;
+        }
+    </script>
+</body>
+</html>
