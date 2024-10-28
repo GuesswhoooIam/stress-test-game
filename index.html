@@ -208,15 +208,26 @@
         }
 
         function processAnswer(index) {
-            if (!isQuestionActive || answeredQuestionsMap[index]) return; // 检查问题是否已经回答
             const select = document.getElementById(`q${index}`);
             if (select && select.value !== "") {
-                totalScore += parseInt(select.value) + additionalScore;
-                additionalScore = 0;
-                clearInterval(countdown);
-                isQuestionActive = false;
-                answeredQuestionsMap[index] = true; // 标记问题已回答
-                showNextQuestion(index);
+                const previousAnswerScore = answeredQuestionsMap[index] || 0;
+                const currentAnswerScore = parseInt(select.value) + additionalScore;
+
+                // 如果用户改变答案，则减去上次的得分，并加上新得分
+                if (answeredQuestionsMap[index] !== undefined) {
+                    totalScore -= previousAnswerScore; // 移除之前的得分
+                } else {
+                    answeredQuestions++; // 若第一次回答该题，则增加已回答问题计数
+                }
+
+                totalScore += currentAnswerScore; // 更新总分
+                answeredQuestionsMap[index] = currentAnswerScore; // 更新回答记录
+                additionalScore = 0; // 重置附加分
+
+                clearInterval(countdown); // 清除倒计时
+                isQuestionActive = false; // 标记该题目已回答
+
+                showNextQuestion(index); // 显示下一题
             }
         }
 
