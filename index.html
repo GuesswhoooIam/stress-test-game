@@ -208,28 +208,34 @@
         }
 
         function processAnswer(index) {
-            const select = document.getElementById(`q${index}`);
-            if (select && select.value !== "") {
-                const previousAnswerScore = answeredQuestionsMap[index] || 0;
-                const currentAnswerScore = parseInt(select.value) + additionalScore;
+    const select = document.getElementById(`q${index}`);
+    if (select && select.value !== "") {
+        const previousAnswerScore = answeredQuestionsMap[index] || 0;
+        const currentAnswerScore = parseInt(select.value) + additionalScore;
 
-                // 如果用户改变答案，则减去上次的得分，并加上新得分
-                if (answeredQuestionsMap[index] !== undefined) {
-                    totalScore -= previousAnswerScore; // 移除之前的得分
-                } else {
-                    answeredQuestions++; // 若第一次回答该题，则增加已回答问题计数
-                }
-
-                totalScore += currentAnswerScore; // 更新总分
-                answeredQuestionsMap[index] = currentAnswerScore; // 更新回答记录
-                additionalScore = 0; // 重置附加分
-
-                clearInterval(countdown); // 清除倒计时
-                isQuestionActive = false; // 标记该题目已回答
-
-                showNextQuestion(index); // 显示下一题
-            }
+        // 检查是否为首次回答
+        if (answeredQuestionsMap[index] !== undefined) {
+            // 如果已经回答过，则减去上一次选择的得分
+            totalScore -= previousAnswerScore;
+        } else {
+            // 如果是第一次回答，增加回答计数并标记为已回答
+            answeredQuestions++;
         }
+
+        // 更新总分并记录本次得分
+        totalScore += currentAnswerScore;
+        answeredQuestionsMap[index] = currentAnswerScore;
+        additionalScore = 0; // 重置附加分
+
+        clearInterval(countdown); // 清除倒计时
+        isQuestionActive = false; // 标记该题目已回答
+
+        // 检查是否已经显示了下一题
+        if (!document.getElementById(`q${index + 1}-section`)) {
+            showNextQuestion(index); // 仅加载下一题一次
+        }
+    }
+}
 
         function showNextQuestion(currentIndex) {
             clearInterval(countdown);
