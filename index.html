@@ -174,7 +174,7 @@
             { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] }
         ];
 
-        function startCountdown() {
+        function startCountdown(currentIndex) {
             let timeLeft = timeLimit;
             additionalScore = 0;
             document.getElementById("timer").innerText = timeLeft.toFixed(2);
@@ -202,7 +202,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     totalScore += 5;
-                    showNextQuestion(answeredQuestions + 1);
+                    showNextQuestion(currentIndex + 1);
                 }
             }, 50);
         }
@@ -221,7 +221,9 @@
 
         function showNextQuestion(currentIndex) {
             clearInterval(countdown);
-            if (!isQuestionActive && currentIndex <= totalQuestions) {
+            isQuestionActive = true;
+
+            if (currentIndex <= totalQuestions) {
                 answeredQuestions++;
                 const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
                 document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
@@ -258,8 +260,7 @@
                     questionDiv.appendChild(select);
                     additionalQuestions.appendChild(questionDiv);
 
-                    isQuestionActive = true;
-                    startCountdown();
+                    startCountdown(currentIndex); // Start countdown with current question index
                 } else {
                     document.getElementById("calculate-button").style.display = "block";
                 }
