@@ -162,8 +162,16 @@
             { question: "你是否觉得学习压力影响了你的睡眠？ | Does academic stress affect your sleep?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否经常觉得学习占用了太多的休息时间？ | Do you often feel that studying takes up too much of your rest time?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你觉得自己的课外兴趣爱好是否常被忽视？ | Do you feel that your hobbies are often ignored?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] }
-            // More questions can be added here...
+            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
+            { question: "家人对你的学业是否要求严格？ | Are your family’s academic expectations strict?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因家人的期望感到压力？ | Do you feel pressured by family expectations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因为朋友的问题而感到烦恼？ | Do you often feel troubled by friends’ issues?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
+            { question: "你是否容易因为小事而感到烦恼？ | Do small things easily bother you?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否常常觉得无精打采？ | Do you often feel unmotivated?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你在应对突发情况时是否会感到不安？ | Do you feel uneasy in unexpected situations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否会因为未来而感到焦虑？ | Do you feel anxious about the future?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
+            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] }
         ];
 
         function startCountdown(currentIndex) {
@@ -193,9 +201,11 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    totalScore += 5;
-                    isQuestionActive = false; // Reset question active state for next question
-                    showNextQuestion(currentIndex + 1);
+                    if (isQuestionActive) {  // 检查问题是否已经回答
+                        totalScore += 5;
+                        isQuestionActive = false;
+                        showNextQuestion(currentIndex + 1);
+                    }
                 }
             }, 50);
         }
