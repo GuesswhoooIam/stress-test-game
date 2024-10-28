@@ -154,6 +154,7 @@
         let timeLimit = 10; // 每道题的总时间限制
         let totalScore = 0; // 总分数
         let additionalScore = 0; // 记录额外得分
+        let isQuestionActive = true; // 跟踪当前问题是否为活动状态
 
         // 初始化题目数据
         const questionsData = [
@@ -162,16 +163,16 @@
             { question: "你是否觉得学习压力影响了你的睡眠？ | Does academic stress affect your sleep?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否经常觉得学习占用了太多的休息时间？ | Do you often feel that studying takes up too much of your rest time?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你觉得自己的课外兴趣爱好是否常被忽视？ | Do you feel that your hobbies are often ignored?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
+            { question: "你在参加课外活动时是否感到开心？ | Do you feel happy during extracurricular activities?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "家人对你的学业是否要求严格？ | Are your family’s academic expectations strict?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因家人的期望感到压力？ | Do you feel pressured by family expectations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因为朋友的问题而感到烦恼？ | Do you often feel troubled by friends’ issues?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] },
+            { question: "你在与朋友沟通时是否觉得轻松？ | Do you feel relaxed communicating with friends?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否容易因为小事而感到烦恼？ | Do small things easily bother you?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否常常觉得无精打采？ | Do you often feel unmotivated?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你在应对突发情况时是否会感到不安？ | Do you feel uneasy in unexpected situations?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
             { question: "你是否会因为未来而感到焦虑？ | Do you feel anxious about the future?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] },
-            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["是 | Yes", "经常 |  Often", " 偶尔 |  Sometimes", " 否 |  No"] }
+            { question: "你是否觉得自己的时间管理是否有效？ | Do you feel your time management is effective?", options: ["从不 | Never", "偶尔 | Sometimes", "经常 | Often", "总是 | Always"] }
         ];
 
         function startCountdown() {
@@ -183,7 +184,6 @@
                 timeLeft -= 0.5;
                 document.getElementById("timer").innerText = timeLeft.toFixed(2);
 
-                // 根据剩余时间更改颜色
                 if (timeLeft <= 2) {
                     document.getElementById("timer").style.color = "red";
                 } else if (timeLeft <= 5) {
@@ -192,7 +192,6 @@
                     document.getElementById("timer").style.color = "green";
                 }
 
-                // 思考时间计分
                 if (timeLeft <= 7 && timeLeft > 5) {
                     additionalScore = 1;
                 } else if (timeLeft <= 5 && timeLeft > 2) {
@@ -201,78 +200,84 @@
                     additionalScore = 3;
                 }
 
-                // 当倒计时到达 0 时跳转到下一题并删除当前题目
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     totalScore += 5; // 超时未回答，得分+5
-                    removeCurrentQuestion(answeredQuestions + 1); // 删除未回答的题目
-                    showNextQuestion(answeredQuestions + 1); // 跳到下一题
+                    removeCurrentQuestion(answeredQuestions + 1);
+                    isQuestionActive = false; // 允许加载下一题
+                    showNextQuestion(answeredQuestions + 1);
                 }
             }, 500); // 每 0.5 秒更新一次倒计时
         }
 
         function processAnswer(index) {
-            const select = document.getElementById(`q${index}`);
-            if (select && select.value !== "") {
-                totalScore += parseInt(select.value) + additionalScore; // 加上选择的分数和额外得分
-                additionalScore = 0; // 重置额外得分
-                clearInterval(countdown); // 停止倒计时
-                showNextQuestion(index + 1); // 显示下一题
+            if (isQuestionActive) {
+                const select = document.getElementById(`q${index}`);
+                if (select && select.value !== "") {
+                    totalScore += parseInt(select.value) + additionalScore;
+                    additionalScore = 0;
+                    clearInterval(countdown);
+                    isQuestionActive = false; // 允许加载下一题
+                    showNextQuestion(index + 1);
+                }
             }
         }
 
         function removeCurrentQuestion(index) {
             const currentQuestionElement = document.getElementById(`q${index}-section`);
             if (currentQuestionElement) {
-                currentQuestionElement.remove(); // 删除当前问题
+                currentQuestionElement.remove();
             }
         }
 
         function showNextQuestion(currentIndex) {
-            const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
-            document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
-            document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
+            if (!isQuestionActive) {
+                answeredQuestions++;
+                const progressPercentage = Math.min((answeredQuestions / totalQuestions) * 100, 100);
+                document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
+                document.getElementById("progress-bar").innerText = `${Math.round(progressPercentage)}%`;
 
-            if (currentIndex < totalQuestions) {
-                const nextQuestion = questionsData[currentIndex];
-                const additionalQuestions = document.getElementById("additional-questions");
+                if (currentIndex < totalQuestions) {
+                    const nextQuestion = questionsData[currentIndex];
+                    const additionalQuestions = document.getElementById("additional-questions");
 
-                const questionDiv = document.createElement("div");
-                questionDiv.classList.add("question");
-                questionDiv.id = `q${currentIndex + 1}-section`;
+                    const questionDiv = document.createElement("div");
+                    questionDiv.classList.add("question");
+                    questionDiv.id = `q${currentIndex + 1}-section`;
 
-                const label = document.createElement("label");
-                label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
-                questionDiv.appendChild(label);
+                    const label = document.createElement("label");
+                    label.innerHTML = `${currentIndex + 1}. ${nextQuestion.question}`;
+                    questionDiv.appendChild(label);
 
-                const select = document.createElement("select");
-                select.id = `q${currentIndex + 1}`;
-                select.onchange = () => processAnswer(currentIndex + 1);
+                    const select = document.createElement("select");
+                    select.id = `q${currentIndex + 1}`;
+                    select.onchange = () => processAnswer(currentIndex + 1);
 
-                const defaultOption = document.createElement("option");
-                defaultOption.value = "";
-                defaultOption.textContent = "请选择 | Please select";
-                select.appendChild(defaultOption);
+                    const defaultOption = document.createElement("option");
+                    defaultOption.value = "";
+                    defaultOption.textContent = "请选择 | Please select";
+                    select.appendChild(defaultOption);
 
-                nextQuestion.options.forEach((optionText, index) => {
-                    const option = document.createElement("option");
-                    option.value = index;
-                    option.textContent = optionText;
-                    select.appendChild(option);
-                });
+                    nextQuestion.options.forEach((optionText, index) => {
+                        const option = document.createElement("option");
+                        option.value = index;
+                        option.textContent = optionText;
+                        select.appendChild(option);
+                    });
 
-                questionDiv.appendChild(select);
-                additionalQuestions.appendChild(questionDiv);
+                    questionDiv.appendChild(select);
+                    additionalQuestions.appendChild(questionDiv);
 
-                startCountdown(); // 显示新问题时开始倒计时
-            } else {
-                document.getElementById("calculate-button").style.display = "block";
+                    isQuestionActive = true; // 设置为活动状态
+                    startCountdown();
+                } else {
+                    document.getElementById("calculate-button").style.display = "block";
+                }
             }
         }
 
         function calculateScore() {
             let resultText = `你的总分：${totalScore} 分<br>`;
-
             resultText += "<br>计分规则：<br>";
             resultText += "- 每道题的选择会产生对应的基础分数。<br>";
             resultText += "- 如果回答时间超过 3 秒，额外得分 +1。<br>";
@@ -281,7 +286,6 @@
             resultText += "- 如果在倒计时结束前未回答，系统自动得分 +5。<br>";
 
             let imagePath;
-
             if (totalScore <= 15) {
                 resultText += "<br><strong>结果：</strong>低压力：保持你的平衡！但要注意不要过度放松哦~ | Low Stress: Keep your balance! But be careful not to relax too much.";
                 imagePath = "image1.jpg";
